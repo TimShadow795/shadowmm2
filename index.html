@@ -61,11 +61,30 @@
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             color: #ffffff;
         }
 
-        .logo span {
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-text .main {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .logo-text .sub {
             font-size: 14px;
             font-weight: normal;
             color: #666;
@@ -561,6 +580,10 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            .logo {
+                justify-content: center;
+            }
             
             .header-controls {
                 flex-direction: column;
@@ -600,8 +623,11 @@
     <header>
         <div class="container">
             <div class="logo">
-                shadowmm2
-                <span>| интернет-магазин</span>
+                <img src="shadow.ico" alt="shadowmm2" onerror="this.style.display='none'">
+                <div class="logo-text">
+                    <span class="main">shadowmm2</span>
+                    <span class="sub">| интернет-магазин</span>
+                </div>
             </div>
             <div class="header-controls">
                 <button onclick="showCart()" class="cart-btn">
