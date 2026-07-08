@@ -271,7 +271,7 @@
         }
 
         .product-actions button {
-            flex: 1;
+            width: 100%;
             padding: 10px;
             border: 2px solid #ffffff;
             border-radius: 8px;
@@ -296,18 +296,6 @@
         .buy-btn:disabled:hover {
             background: transparent;
             color: #333;
-        }
-
-        .delete-btn {
-            border-color: #444 !important;
-            color: #666 !important;
-            flex: 0.3;
-        }
-
-        .delete-btn:hover {
-            border-color: #ff4444 !important;
-            color: #ff4444 !important;
-            background: transparent !important;
         }
 
         /* Модальное окно корзины */
@@ -435,7 +423,29 @@
             color: #ffffff;
         }
 
-        .checkout-btn {
+        .payment-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+
+        .payment-section h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .payment-section .total-price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .payment-section .pay-btn {
             width: 100%;
             padding: 15px;
             background: #ffffff;
@@ -446,12 +456,42 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin-top: 10px;
         }
 
-        .checkout-btn:hover {
+        .payment-section .pay-btn:hover {
             background: #000000;
             color: #ffffff;
             border: 2px solid #ffffff;
+        }
+
+        .payment-section .telegram-contact {
+            text-align: center;
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px dashed #555;
+            border-radius: 10px;
+        }
+
+        .payment-section .telegram-contact a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .payment-section .telegram-contact a:hover {
+            color: #888;
+        }
+
+        .payment-section .telegram-contact .hint {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
         }
 
         .empty-cart {
@@ -598,8 +638,22 @@
                 <span class="close" onclick="closeCart()">&times;</span>
                 <h2>🛒 Ваша корзина</h2>
                 <div id="cartItems"></div>
-                <div id="cartTotal" class="cart-total"></div>
-                <button onclick="checkout()" class="checkout-btn">✅ Оформить заказ</button>
+                
+                <div id="paymentSection" style="display: none;">
+                    <div class="payment-section">
+                        <h3>💳 Оплата</h3>
+                        <div class="total-price" id="totalPrice">0 ₽</div>
+                        <button onclick="payViaTelegram()" class="pay-btn">
+                            📱 Оплатить через Telegram
+                        </button>
+                        <div class="telegram-contact">
+                            <a href="https://t.me/timshadow11" target="_blank">
+                                💬 Написать @timshadow11
+                            </a>
+                            <div class="hint">Оплата и доставка обсуждаются с продавцом</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -624,7 +678,6 @@
         let products = [];
         let cart = [];
         let nextId = 1;
-        let isLoaded = false;
 
         // Загрузка товаров из tovar.txt
         async function loadFromTovarFile() {
@@ -635,7 +688,6 @@
                 }
                 const content = await response.text();
                 parseTovarFile(content);
-                isLoaded = true;
             } catch (error) {
                 console.log('Ошибка загрузки tovar.txt:', error);
                 loadDemoProducts();
@@ -798,7 +850,6 @@
                             <button class="buy-btn" onclick="addToCart(${product.id})" ${product.stock === 0 ? 'disabled' : ''}>
                                 🛒 В корзину
                             </button>
-                            <button class="delete-btn" onclick="deleteProduct(${product.id})">🗑</button>
                         </div>
                     </div>
                 </div>
@@ -857,11 +908,11 @@
         function showCart() {
             const modal = document.getElementById('cartModal');
             const items = document.getElementById('cartItems');
-            const total = document.getElementById('cartTotal');
+            const paymentSection = document.getElementById('paymentSection');
             
             if (cart.length === 0) {
                 items.innerHTML = '<div class="empty-cart">🛒 Корзина пуста</div>';
-                total.innerHTML = '';
+                paymentSection.style.display = 'none';
                 modal.style.display = 'block';
                 return;
             }
@@ -882,7 +933,8 @@
             `).join('');
             
             const totalSum = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            total.innerHTML = `Итого: ${totalSum.toLocaleString()} ₽`;
+            document.getElementById('totalPrice').textContent = totalSum.toLocaleString() + ' ₽';
+            paymentSection.style.display = 'block';
             
             modal.style.display = 'block';
         }
@@ -940,55 +992,49 @@
             document.getElementById('cartModal').style.display = 'none';
         }
 
-        // Оформить заказ
-        function checkout() {
+        // Оплата через Telegram
+        function payViaTelegram() {
             if (cart.length === 0) {
                 showNotification('❌ Корзина пуста!', 'error');
                 return;
             }
             
             const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            const orderNumber = Date.now();
             
-            let receipt = `🧾 ЧЕК №${orderNumber}\n`;
-            receipt += `Магазин: shadowmm2\n`;
-            receipt += `Дата: ${new Date().toLocaleString()}\n`;
-            receipt += `${'='.repeat(40)}\n`;
+            // Формируем сообщение для Telegram
+            let message = `🛒 *Новый заказ в shadowmm2*\n\n`;
+            message += `📦 *Товары:*\n`;
             cart.forEach(item => {
-                receipt += `${item.name} x${item.quantity} = ${(item.price * item.quantity).toLocaleString()} ₽\n`;
+                message += `• ${item.name} x${item.quantity} = ${(item.price * item.quantity).toLocaleString()} ₽\n`;
             });
-            receipt += `${'='.repeat(40)}\n`;
-            receipt += `ИТОГО: ${total.toLocaleString()} ₽\n`;
-            receipt += `\nСпасибо за покупку! 🎉\n`;
-            receipt += `По вопросам: @timshadow11`;
+            message += `\n💵 *Итого: ${total.toLocaleString()} ₽*`;
+            message += `\n\n📱 Для оплаты напишите продавцу: @timshadow11`;
             
-            const blob = new Blob([receipt], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `чек_${orderNumber}.txt`;
-            link.click();
+            // Кодируем сообщение для URL
+            const encodedMessage = encodeURIComponent(message);
             
-            showNotification(`✅ Заказ оформлен! Сумма: ${total.toLocaleString()} ₽`);
+            // Открываем Telegram с готовым сообщением
+            window.open(`https://t.me/timshadow11?text=${encodedMessage}`, '_blank');
             
-            cart = [];
-            updateCartCount();
-            closeCart();
-            renderProducts();
-            saveProducts();
-        }
-
-        // Удалить товар
-        function deleteProduct(productId) {
-            if (!confirm('Удалить товар?')) return;
+            // Показываем уведомление
+            showNotification('📱 Открыт Telegram для оплаты', 'success');
             
-            const index = products.findIndex(p => p.id === productId);
-            if (index === -1) return;
-            
-            const product = products[index];
-            products.splice(index, 1);
-            saveProducts();
-            renderProducts();
-            showNotification(`🗑 Товар "${product.name}" удален`);
+            // Очищаем корзину после оформления
+            setTimeout(() => {
+                // Возвращаем товары на склад
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        product.stock += item.quantity;
+                    }
+                });
+                cart = [];
+                updateCartCount();
+                saveProducts();
+                renderProducts();
+                closeCart();
+                showNotification('✅ Заказ оформлен! Ожидайте подтверждения от продавца', 'success');
+            }, 3000);
         }
 
         // Закрытие модалки по клику вне
