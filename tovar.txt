@@ -1,12 +1,60 @@
 tovar1{
 name: Corrupted
 price: 1000
-description: corrupted пушка
-stock: 102
+description:
+stock: 19
 }
 tovar2{
-name: Ещё товар
-price: 2000
+name: Heartblade
+price: 215
+description: 
+stock: 55
+}
+tovar2{
+name: Bat
+price: 450
+description:
+stock: 29
+}
+tovar2{
+name: Harvester
+price: 500
+description:
+stock: 96
+}
+tovar2{
+name: Chroma Cookiecane
+price: 135
 description: Описание товара
-stock: 5
+stock: 3
+}
+tovar2{
+name: Heartblade
+price: 215
+description: Описание товара
+stock: 999
+}
+tovar2{
+name: Heartblade
+price: 215
+description: Описание товара
+stock: 999
+}
+tovar2{
+name: Heartblade
+price: 215
+description: Описание товара
+stock: 999
+}
+tovar2{
+name: Heartblade
+price: 215
+description: Описание товара
+stock: 999
+}
+tovar2{
+name: Heartblade
+price: 215
+description: Описание товара
+stock: 999
 }
