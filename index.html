@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚫ shadowmm2</title>
+    <link rel="icon" type="image/x-icon" href="shadow.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="shadow.ico">
     <style>
         * {
             margin: 0;
@@ -1001,7 +1003,6 @@
             
             const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
             
-            // Формируем сообщение для Telegram
             let message = `🛒 *Новый заказ в shadowmm2*\n\n`;
             message += `📦 *Товары:*\n`;
             cart.forEach(item => {
@@ -1010,18 +1011,12 @@
             message += `\n💵 *Итого: ${total.toLocaleString()} ₽*`;
             message += `\n\n📱 Для оплаты напишите продавцу: @timshadow11`;
             
-            // Кодируем сообщение для URL
             const encodedMessage = encodeURIComponent(message);
-            
-            // Открываем Telegram с готовым сообщением
             window.open(`https://t.me/timshadow11?text=${encodedMessage}`, '_blank');
             
-            // Показываем уведомление
             showNotification('📱 Открыт Telegram для оплаты', 'success');
             
-            // Очищаем корзину после оформления
             setTimeout(() => {
-                // Возвращаем товары на склад
                 cart.forEach(item => {
                     const product = products.find(p => p.id === item.id);
                     if (product) {
