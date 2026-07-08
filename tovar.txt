@@ -1,0 +1,12 @@
+tovar1{
+name: Corrupted
+price: 1000
+description: corrupted пушка
+stock: 102
+}
+tovar2{
+name: Ещё товар
+price: 2000
+description: Описание товара
+stock: 5
+}
