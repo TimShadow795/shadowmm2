@@ -57,8 +57,6 @@
         }
 
         .logo {
-            font-size: 32px;
-            font-weight: bold;
             display: flex;
             align-items: center;
             gap: 15px;
@@ -96,6 +94,26 @@
             gap: 10px;
             flex-wrap: wrap;
             align-items: center;
+        }
+
+        .header-controls .user-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 15px;
+            border: 1px solid #555;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .header-controls .user-status.verified {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .header-controls .user-status .badge {
+            font-size: 18px;
         }
 
         .cart-btn {
@@ -141,6 +159,23 @@
         .contact-btn:hover {
             background: transparent;
             color: #ffffff;
+        }
+
+        .verify-btn {
+            padding: 10px 20px;
+            border: 2px solid #ffffff;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #ffffff;
+        }
+
+        .verify-btn:hover {
+            background: #ffffff;
+            color: #000000;
         }
 
         /* Уведомления */
@@ -523,6 +558,111 @@
             font-size: 18px;
         }
 
+        /* Стили для верификации */
+        .verify-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .verify-container input {
+            padding: 12px 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #111;
+            color: #ffffff;
+            width: 100%;
+        }
+
+        .verify-container input:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+
+        .verify-container .phrase-box {
+            background: #1a1a1a;
+            border: 1px dashed #555;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            color: #ffffff;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .verify-container .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .verify-container .buttons button {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ffffff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #ffffff;
+            font-size: 16px;
+            min-width: 120px;
+        }
+
+        .verify-container .buttons button:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .verify-container .buttons button:disabled {
+            border-color: #333;
+            color: #333;
+            cursor: not-allowed;
+        }
+
+        .verify-container .status {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .verify-container .status.success {
+            border: 1px solid #ffffff;
+            color: #ffffff;
+        }
+
+        .verify-container .status.error {
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+
+        .verify-container .status.info {
+            border: 1px solid #888;
+            color: #aaa;
+        }
+
+        .verify-container .instructions {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 3px solid #ffffff;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .verify-container .instructions a {
+            color: #ffffff;
+        }
+
+        .verify-container .instructions a:hover {
+            text-decoration: underline;
+        }
+
         /* Footer */
         footer {
             margin-top: 50px;
@@ -588,10 +728,16 @@
             
             .header-controls {
                 flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-controls .user-status {
+                justify-content: center;
             }
             
             .header-controls button,
-            .contact-btn {
+            .contact-btn,
+            .verify-btn {
                 width: 100%;
                 text-align: center;
             }
@@ -617,6 +763,10 @@
             footer .contact-info {
                 flex-direction: column;
             }
+
+            .verify-container .buttons button {
+                flex: 1 1 100%;
+            }
         }
     </style>
 </head>
@@ -631,6 +781,13 @@
                 </div>
             </div>
             <div class="header-controls">
+                <div id="userStatus" class="user-status">
+                    <span class="badge">🔒</span>
+                    <span id="userStatusText">Не верифицирован</span>
+                </div>
+                <button onclick="openVerifyModal()" class="verify-btn" id="verifyBtn">
+                    🔑 Верификация
+                </button>
                 <button onclick="showCart()" class="cart-btn">
                     🛒 Корзина <span id="cartCount">0</span>
                 </button>
@@ -659,6 +816,33 @@
         <!-- Список товаров -->
         <div id="productsGrid" class="products-grid">
             <div class="loading">⏳ Загрузка товаров...</div>
+        </div>
+
+        <!-- Модальное окно верификации -->
+        <div id="verifyModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeVerifyModal()">&times;</span>
+                <h2>🔑 Верификация через Roblox</h2>
+                <div class="verify-container">
+                    <div class="instructions">
+                        <p>📌 <strong>Инструкция:</strong></p>
+                        <ol style="margin-left: 20px; color: #ccc;">
+                            <li>Введите свой <strong>ник в Roblox</strong> ниже.</li>
+                            <li>Нажмите <strong>"Получить фразу"</strong>.</li>
+                            <li>Скопируйте полученную фразу и вставьте её в раздел <strong>"About me"</strong> своего профиля Roblox.</li>
+                            <li>Нажмите <strong>"Проверить"</strong> для подтверждения.</li>
+                        </ol>
+                        <p style="margin-top: 10px;">🔗 <a href="https://www.roblox.com/my/account" target="_blank">Перейти в настройки профиля Roblox</a></p>
+                    </div>
+                    <input type="text" id="robloxUsername" placeholder="Введите ник в Roblox" value="">
+                    <div class="buttons">
+                        <button onclick="generatePhrase()" id="generateBtn">🎲 Получить фразу</button>
+                        <button onclick="verifyRoblox()" id="verifyRobloxBtn">✅ Проверить</button>
+                    </div>
+                    <div id="phraseDisplay" class="phrase-box" style="display: none;"></div>
+                    <div id="verifyStatus" class="status info">Введите ник и нажмите "Получить фразу"</div>
+                </div>
+            </div>
         </div>
 
         <!-- Корзина (модальное окно) -->
@@ -703,7 +887,7 @@
     </footer>
 
     <script>
-        // Хранилище товаров
+        // -------- МАГАЗИН (без изменений) --------
         let products = [];
         let cart = [];
         let nextId = 1;
@@ -712,9 +896,7 @@
         async function loadFromTovarFile() {
             try {
                 const response = await fetch('tovar.txt');
-                if (!response.ok) {
-                    throw new Error('Файл tovar.txt не найден');
-                }
+                if (!response.ok) throw new Error('Файл tovar.txt не найден');
                 const content = await response.text();
                 parseTovarFile(content);
             } catch (error) {
@@ -723,14 +905,13 @@
             }
         }
 
-        // Загрузка демо-товаров
         function loadDemoProducts() {
             const demoProducts = [
-                { id: nextId++, name: 'iPhone 15 Pro', price: 99990, description: 'Новейший смартфон с титановым корпусом и мощным процессором', stock: 15 },
-                { id: nextId++, name: 'Наушники Sony WH-1000XM5', price: 34990, description: 'Лучшие беспроводные наушники с шумоподавлением', stock: 8 },
-                { id: nextId++, name: 'Клавиатура Mechanical', price: 12990, description: 'Механическая клавиатура с RGB подсветкой', stock: 25 },
-                { id: nextId++, name: 'Монитор 4K 27"', price: 45990, description: '4K монитор с IPS матрицей и частотой 144Hz', stock: 5 },
-                { id: nextId++, name: 'Мышь Logitech MX Master 3S', price: 14990, description: 'Эргономичная мышь с бесшумными кнопками', stock: 12 }
+                { id: nextId++, name: 'iPhone 15 Pro', price: 99990, description: 'Новейший смартфон с титановым корпусом', stock: 15 },
+                { id: nextId++, name: 'Наушники Sony WH-1000XM5', price: 34990, description: 'Лучшие беспроводные наушники', stock: 8 },
+                { id: nextId++, name: 'Клавиатура Mechanical', price: 12990, description: 'Механическая клавиатура с RGB', stock: 25 },
+                { id: nextId++, name: 'Монитор 4K 27"', price: 45990, description: '4K монитор с IPS матрицей', stock: 5 },
+                { id: nextId++, name: 'Мышь Logitech MX Master 3S', price: 14990, description: 'Эргономичная мышь', stock: 12 }
             ];
             products = demoProducts;
             saveProducts();
@@ -738,27 +919,19 @@
             showNotification('📦 Загружены демо-товары. Добавьте файл tovar.txt', 'success');
         }
 
-        // Парсинг файла tovar.txt
         function parseTovarFile(content) {
             const lines = content.split('\n');
             let currentProduct = null;
-            let addedCount = 0;
-            let errorCount = 0;
-            
+            let addedCount = 0, errorCount = 0;
             products = [];
             nextId = 1;
-            
             for (let line of lines) {
                 line = line.trim();
                 if (!line) continue;
-                
                 if (line.startsWith('tovar')) {
                     if (currentProduct) {
-                        if (validateAndAddProduct(currentProduct)) {
-                            addedCount++;
-                        } else {
-                            errorCount++;
-                        }
+                        if (validateAndAddProduct(currentProduct)) addedCount++;
+                        else errorCount++;
                     }
                     currentProduct = {};
                 } else if (currentProduct) {
@@ -766,7 +939,6 @@
                     if (parts.length >= 2) {
                         const key = parts[0].trim().toLowerCase();
                         const value = parts.slice(1).join(':').trim();
-                        
                         if (key === 'name') currentProduct.name = value;
                         else if (key === 'price') currentProduct.price = parseFloat(value);
                         else if (key === 'description') currentProduct.description = value;
@@ -774,15 +946,10 @@
                     }
                 }
             }
-            
             if (currentProduct) {
-                if (validateAndAddProduct(currentProduct)) {
-                    addedCount++;
-                } else {
-                    errorCount++;
-                }
+                if (validateAndAddProduct(currentProduct)) addedCount++;
+                else errorCount++;
             }
-            
             if (addedCount > 0) {
                 saveProducts();
                 renderProducts();
@@ -792,19 +959,14 @@
             }
         }
 
-        // Валидация и добавление товара
         function validateAndAddProduct(product) {
-            if (!product.name || isNaN(product.price) || isNaN(product.stock)) {
-                return false;
-            }
-            
+            if (!product.name || isNaN(product.price) || isNaN(product.stock)) return false;
             product.id = nextId++;
             product.description = product.description || 'Нет описания';
             products.push(product);
             return true;
         }
 
-        // Загрузка товаров из localStorage
         function loadProducts() {
             const saved = localStorage.getItem('shopProducts');
             if (saved) {
@@ -820,19 +982,16 @@
             return false;
         }
 
-        // Сохранение товаров в localStorage
         function saveProducts() {
             localStorage.setItem('shopProducts', JSON.stringify(products));
         }
 
-        // Показать уведомление
         function showNotification(message, type = 'success') {
             const container = document.getElementById('notification');
             const notification = document.createElement('div');
             notification.className = `notification-item ${type}`;
             notification.textContent = message;
             container.appendChild(notification);
-            
             setTimeout(() => {
                 notification.style.opacity = '0';
                 notification.style.transform = 'translateX(100px)';
@@ -840,30 +999,21 @@
             }, 3000);
         }
 
-        // Отображение товаров
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
             const sort = document.getElementById('sortSelect').value;
-            
             let filtered = products.filter(p => 
                 p.name.toLowerCase().includes(search) || 
                 p.description.toLowerCase().includes(search)
             );
-            
-            if (sort === 'price-asc') {
-                filtered.sort((a, b) => a.price - b.price);
-            } else if (sort === 'price-desc') {
-                filtered.sort((a, b) => b.price - a.price);
-            } else if (sort === 'name') {
-                filtered.sort((a, b) => a.name.localeCompare(b.name));
-            }
-            
+            if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+            else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+            else if (sort === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name));
             if (filtered.length === 0) {
                 grid.innerHTML = '<p style="text-align: center; padding: 50px; color: #333; font-size: 18px;">📭 Товаров не найдено</p>';
                 return;
             }
-            
             grid.innerHTML = filtered.map(product => `
                 <div class="product-card">
                     <div class="product-content">
@@ -871,9 +1021,7 @@
                         <div class="product-price">${product.price.toLocaleString()} ₽</div>
                         <div class="product-desc">${product.description}</div>
                         <div class="product-stock">
-                            ${product.stock > 0 
-                                ? `<span class="in-stock">✅ В наличии: ${product.stock} шт.</span>` 
-                                : `<span class="out-of-stock">❌ Нет в наличии</span>`}
+                            ${product.stock > 0 ? `<span class="in-stock">✅ В наличии: ${product.stock} шт.</span>` : `<span class="out-of-stock">❌ Нет в наличии</span>`}
                         </div>
                         <div class="product-actions">
                             <button class="buy-btn" onclick="addToCart(${product.id})" ${product.stock === 0 ? 'disabled' : ''}>
@@ -885,26 +1033,16 @@
             `).join('');
         }
 
-        // Фильтр товаров
-        function filterProducts() {
-            renderProducts();
-        }
+        function filterProducts() { renderProducts(); }
+        function sortProducts() { renderProducts(); }
 
-        // Сортировка товаров
-        function sortProducts() {
-            renderProducts();
-        }
-
-        // Добавление в корзину
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-            
             if (product.stock <= 0) {
                 showNotification('❌ Товар отсутствует на складе!', 'error');
                 return;
             }
-            
             const cartItem = cart.find(item => item.id === productId);
             if (cartItem) {
                 if (cartItem.quantity >= product.stock) {
@@ -913,39 +1051,29 @@
                 }
                 cartItem.quantity++;
             } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: 1
-                });
+                cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
             }
-            
             product.stock--;
             saveProducts();
             updateCartCount();
             showNotification(`✅ "${product.name}" добавлен в корзину`);
         }
 
-        // Обновление счетчика корзины
         function updateCartCount() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cartCount').textContent = count;
         }
 
-        // Показать корзину
         function showCart() {
             const modal = document.getElementById('cartModal');
             const items = document.getElementById('cartItems');
             const paymentSection = document.getElementById('paymentSection');
-            
             if (cart.length === 0) {
                 items.innerHTML = '<div class="empty-cart">🛒 Корзина пуста</div>';
                 paymentSection.style.display = 'none';
                 modal.style.display = 'block';
                 return;
             }
-            
             items.innerHTML = cart.map((item, index) => `
                 <div class="cart-item">
                     <div class="cart-item-info">
@@ -960,22 +1088,17 @@
                     </div>
                 </div>
             `).join('');
-            
             const totalSum = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
             document.getElementById('totalPrice').textContent = totalSum.toLocaleString() + ' ₽';
             paymentSection.style.display = 'block';
-            
             modal.style.display = 'block';
         }
 
-        // Изменить количество в корзине
         function changeQuantity(index, delta) {
             const item = cart[index];
             if (!item) return;
-            
             const product = products.find(p => p.id === item.id);
             if (!product) return;
-            
             if (delta > 0) {
                 if (product.stock <= 0) {
                     showNotification('❌ Недостаточно товара!', 'error');
@@ -992,63 +1115,48 @@
                     cart.splice(index, 1);
                 }
             }
-            
             saveProducts();
             updateCartCount();
             showCart();
             renderProducts();
         }
 
-        // Удалить из корзины
         function removeFromCart(index) {
             const item = cart[index];
             if (!item) return;
-            
             const product = products.find(p => p.id === item.id);
             if (product) {
                 product.stock += item.quantity;
                 saveProducts();
             }
-            
             cart.splice(index, 1);
             updateCartCount();
             showCart();
             renderProducts();
         }
 
-        // Закрыть корзину
         function closeCart() {
             document.getElementById('cartModal').style.display = 'none';
         }
 
-        // Оплата через Telegram
         function payViaTelegram() {
             if (cart.length === 0) {
                 showNotification('❌ Корзина пуста!', 'error');
                 return;
             }
-            
             const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            
-            let message = `🛒 *Новый заказ в shadowmm2*\n\n`;
-            message += `📦 *Товары:*\n`;
+            let message = `🛒 *Новый заказ в shadowmm2*\n\n📦 *Товары:*\n`;
             cart.forEach(item => {
                 message += `• ${item.name} x${item.quantity} = ${(item.price * item.quantity).toLocaleString()} ₽\n`;
             });
-            message += `\n💵 *Итого: ${total.toLocaleString()} ₽*`;
-            message += `\n\n📱 Для оплаты напишите продавцу: @timshadow11`;
-            
+            message += `\n💵 *Итого: ${total.toLocaleString()} ₽*\n\n📱 Для оплаты напишите продавцу: @timshadow11`;
             const encodedMessage = encodeURIComponent(message);
             window.open(`https://t.me/timshadow11?text=${encodedMessage}`, '_blank');
-            
             showNotification('📱 Открыт Telegram для оплаты', 'success');
-            
             setTimeout(() => {
                 cart.forEach(item => {
                     const product = products.find(p => p.id === item.id);
-                    if (product) {
-                        product.stock += item.quantity;
-                    }
+                    if (product) product.stock += item.quantity;
                 });
                 cart = [];
                 updateCartCount();
@@ -1059,21 +1167,181 @@
             }, 3000);
         }
 
-        // Закрытие модалки по клику вне
         window.onclick = function(event) {
             const modal = document.getElementById('cartModal');
-            if (event.target === modal) {
-                closeCart();
-            }
+            if (event.target === modal) closeCart();
+            const verifyModal = document.getElementById('verifyModal');
+            if (event.target === verifyModal) closeVerifyModal();
         };
 
-        // Инициализация
+        // -------- СИСТЕМА ВЕРИФИКАЦИИ --------
+        const phraseWords = [
+            'shadow', 'tea', 'roblox', 'coffee', 'cool', 'drink', 'rain',
+            'storm', 'night', 'moon', 'star', 'cloud', 'wind', 'snow',
+            'sun', 'fire', 'water', 'earth', 'sky', 'ocean', 'forest',
+            'mountain', 'river', 'lake', 'flower', 'tree', 'bird', 'fish',
+            'cat', 'dog', 'wolf', 'fox', 'bear', 'lion', 'tiger', 'eagle',
+            'hawk', 'dragon', 'phoenix', 'unicorn', 'mermaid', 'elf', 'dwarf',
+            'wizard', 'witch', 'knight', 'king', 'queen', 'prince', 'princess',
+            'hero', 'villain', 'ghost', 'spirit', 'angel', 'demon', 'god', 'goddess'
+        ];
+
+        let currentPhrase = '';
+        let currentUsername = '';
+
+        // Загрузка состояния верификации
+        function loadVerification() {
+            const saved = localStorage.getItem('robloxVerify');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data && data.verified) {
+                    currentUsername = data.username;
+                    currentPhrase = data.phrase;
+                    updateUserStatus(true, data.username);
+                    document.getElementById('robloxUsername').value = data.username;
+                    document.getElementById('phraseDisplay').textContent = data.phrase;
+                    document.getElementById('phraseDisplay').style.display = 'block';
+                    document.getElementById('verifyStatus').className = 'status success';
+                    document.getElementById('verifyStatus').textContent = `✅ Верифицирован как ${data.username}`;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function saveVerification(username, phrase) {
+            localStorage.setItem('robloxVerify', JSON.stringify({
+                username: username,
+                phrase: phrase,
+                verified: true
+            }));
+        }
+
+        function updateUserStatus(verified, username) {
+            const statusDiv = document.getElementById('userStatus');
+            const textSpan = document.getElementById('userStatusText');
+            if (verified) {
+                statusDiv.className = 'user-status verified';
+                document.querySelector('.badge').textContent = '✅';
+                textSpan.textContent = `Верифицирован: ${username}`;
+                document.getElementById('verifyBtn').textContent = '🔄 Сменить аккаунт';
+            } else {
+                statusDiv.className = 'user-status';
+                document.querySelector('.badge').textContent = '🔒';
+                textSpan.textContent = 'Не верифицирован';
+                document.getElementById('verifyBtn').textContent = '🔑 Верификация';
+            }
+        }
+
+        function openVerifyModal() {
+            document.getElementById('verifyModal').style.display = 'block';
+            // Если уже верифицирован, подгружаем данные
+            const saved = localStorage.getItem('robloxVerify');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data && data.verified) {
+                    document.getElementById('robloxUsername').value = data.username;
+                    document.getElementById('phraseDisplay').textContent = data.phrase;
+                    document.getElementById('phraseDisplay').style.display = 'block';
+                    document.getElementById('verifyStatus').className = 'status success';
+                    document.getElementById('verifyStatus').textContent = `✅ Уже верифицирован как ${data.username}`;
+                }
+            }
+        }
+
+        function closeVerifyModal() {
+            document.getElementById('verifyModal').style.display = 'none';
+        }
+
+        function generatePhrase() {
+            const username = document.getElementById('robloxUsername').value.trim();
+            if (!username) {
+                document.getElementById('verifyStatus').className = 'status error';
+                document.getElementById('verifyStatus').textContent = '❌ Введите ник в Roblox';
+                return;
+            }
+            // Генерируем фразу из 3-5 случайных слов
+            const count = 3 + Math.floor(Math.random() * 3); // 3-5
+            const words = [];
+            for (let i = 0; i < count; i++) {
+                const randomIndex = Math.floor(Math.random() * phraseWords.length);
+                words.push(phraseWords[randomIndex]);
+            }
+            currentPhrase = words.join(' ');
+            currentUsername = username;
+            document.getElementById('phraseDisplay').textContent = currentPhrase;
+            document.getElementById('phraseDisplay').style.display = 'block';
+            document.getElementById('verifyStatus').className = 'status info';
+            document.getElementById('verifyStatus').textContent = `📝 Фраза сгенерирована. Вставьте её в "About me" в Roblox и нажмите "Проверить".`;
+            // Сохраняем ник в localStorage для удобства
+            localStorage.setItem('robloxUsername', username);
+        }
+
+        async function verifyRoblox() {
+            const username = document.getElementById('robloxUsername').value.trim();
+            if (!username) {
+                document.getElementById('verifyStatus').className = 'status error';
+                document.getElementById('verifyStatus').textContent = '❌ Введите ник в Roblox';
+                return;
+            }
+            if (!currentPhrase) {
+                document.getElementById('verifyStatus').className = 'status error';
+                document.getElementById('verifyStatus').textContent = '❌ Сначала получите фразу';
+                return;
+            }
+
+            document.getElementById('verifyStatus').className = 'status info';
+            document.getElementById('verifyStatus').textContent = '⏳ Проверка...';
+
+            try {
+                // 1. Получаем userId по username
+                const userResponse = await fetch(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
+                if (!userResponse.ok) {
+                    throw new Error('Пользователь не найден');
+                }
+                const userData = await userResponse.json();
+                if (!userData || !userData.Id) {
+                    throw new Error('Пользователь не найден');
+                }
+                const userId = userData.Id;
+
+                // 2. Получаем описание профиля
+                const descResponse = await fetch(`https://users.roblox.com/v1/users/${userId}/description`);
+                if (!descResponse.ok) {
+                    throw new Error('Не удалось получить описание профиля');
+                }
+                const descData = await descResponse.json();
+                const description = descData.description || '';
+
+                // 3. Проверяем наличие фразы
+                if (description.includes(currentPhrase)) {
+                    // Верификация успешна
+                    document.getElementById('verifyStatus').className = 'status success';
+                    document.getElementById('verifyStatus').textContent = `✅ Верификация прошла успешно! Добро пожаловать, ${username}!`;
+                    saveVerification(username, currentPhrase);
+                    updateUserStatus(true, username);
+                    // Обновляем кнопку
+                    document.getElementById('verifyBtn').textContent = '🔄 Сменить аккаунт';
+                    showNotification(`✅ Вы верифицированы как ${username}`, 'success');
+                } else {
+                    document.getElementById('verifyStatus').className = 'status error';
+                    document.getElementById('verifyStatus').textContent = `❌ Фраза не найдена в описании профиля. Убедитесь, что вы вставили "${currentPhrase}" в "About me".`;
+                }
+            } catch (error) {
+                document.getElementById('verifyStatus').className = 'status error';
+                document.getElementById('verifyStatus').textContent = `❌ Ошибка: ${error.message}`;
+                console.error(error);
+            }
+        }
+
+        // -------- ИНИЦИАЛИЗАЦИЯ --------
         async function init() {
+            // Загружаем товары
             const hasSaved = loadProducts();
-            
             if (!hasSaved) {
                 await loadFromTovarFile();
             } else {
+                // Проверяем обновление tovar.txt
                 try {
                     const response = await fetch('tovar.txt?t=' + Date.now());
                     if (response.ok) {
@@ -1081,7 +1349,6 @@
                         const lines = content.split('\n');
                         let currentProduct = null;
                         let hasNewProducts = false;
-                        
                         for (let line of lines) {
                             line = line.trim();
                             if (!line) continue;
@@ -1104,13 +1371,21 @@
                                 }
                             }
                         }
-                        
                         if (hasNewProducts) {
                             parseTovarFile(content);
                             showNotification('🔄 Товары обновлены из tovar.txt', 'success');
                         }
                     }
                 } catch (e) {}
+            }
+
+            // Загружаем состояние верификации
+            loadVerification();
+
+            // Восстанавливаем ник из localStorage для удобства
+            const savedUsername = localStorage.getItem('robloxUsername');
+            if (savedUsername) {
+                document.getElementById('robloxUsername').value = savedUsername;
             }
         }
 
