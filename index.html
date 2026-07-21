@@ -887,12 +887,11 @@
     </footer>
 
     <script>
-        // -------- МАГАЗИН (без изменений) --------
+        // -------- МАГАЗИН --------
         let products = [];
         let cart = [];
         let nextId = 1;
 
-        // Загрузка товаров из tovar.txt
         async function loadFromTovarFile() {
             try {
                 const response = await fetch('tovar.txt');
@@ -1174,7 +1173,7 @@
             if (event.target === verifyModal) closeVerifyModal();
         };
 
-        // -------- СИСТЕМА ВЕРИФИКАЦИИ --------
+        // -------- СИСТЕМА ВЕРИФИКАЦИИ (исправленная) --------
         const phraseWords = [
             'shadow', 'tea', 'roblox', 'coffee', 'cool', 'drink', 'rain',
             'storm', 'night', 'moon', 'star', 'cloud', 'wind', 'snow',
@@ -1189,7 +1188,6 @@
         let currentPhrase = '';
         let currentUsername = '';
 
-        // Загрузка состояния верификации
         function loadVerification() {
             const saved = localStorage.getItem('robloxVerify');
             if (saved) {
@@ -1235,7 +1233,6 @@
 
         function openVerifyModal() {
             document.getElementById('verifyModal').style.display = 'block';
-            // Если уже верифицирован, подгружаем данные
             const saved = localStorage.getItem('robloxVerify');
             if (saved) {
                 const data = JSON.parse(saved);
@@ -1260,8 +1257,7 @@
                 document.getElementById('verifyStatus').textContent = '❌ Введите ник в Roblox';
                 return;
             }
-            // Генерируем фразу из 3-5 случайных слов
-            const count = 3 + Math.floor(Math.random() * 3); // 3-5
+            const count = 3 + Math.floor(Math.random() * 3);
             const words = [];
             for (let i = 0; i < count; i++) {
                 const randomIndex = Math.floor(Math.random() * phraseWords.length);
@@ -1273,8 +1269,16 @@
             document.getElementById('phraseDisplay').style.display = 'block';
             document.getElementById('verifyStatus').className = 'status info';
             document.getElementById('verifyStatus').textContent = `📝 Фраза сгенерирована. Вставьте её в "About me" в Roblox и нажмите "Проверить".`;
-            // Сохраняем ник в localStorage для удобства
             localStorage.setItem('robloxUsername', username);
+        }
+
+        // Функция запроса через прокси для обхода CORS
+        async function fetchWithProxy(url) {
+            // Используем бесплатный прокси-сервер allorigins
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.text();
         }
 
         async function verifyRoblox() {
@@ -1294,33 +1298,27 @@
             document.getElementById('verifyStatus').textContent = '⏳ Проверка...';
 
             try {
-                // 1. Получаем userId по username
-                const userResponse = await fetch(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
-                if (!userResponse.ok) {
-                    throw new Error('Пользователь не найден');
-                }
-                const userData = await userResponse.json();
+                // 1. Получаем userId через прокси
+                const userUrl = `https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`;
+                const userDataText = await fetchWithProxy(userUrl);
+                const userData = JSON.parse(userDataText);
                 if (!userData || !userData.Id) {
                     throw new Error('Пользователь не найден');
                 }
                 const userId = userData.Id;
 
-                // 2. Получаем описание профиля
-                const descResponse = await fetch(`https://users.roblox.com/v1/users/${userId}/description`);
-                if (!descResponse.ok) {
-                    throw new Error('Не удалось получить описание профиля');
-                }
-                const descData = await descResponse.json();
+                // 2. Получаем описание профиля через прокси
+                const descUrl = `https://users.roblox.com/v1/users/${userId}/description`;
+                const descDataText = await fetchWithProxy(descUrl);
+                const descData = JSON.parse(descDataText);
                 const description = descData.description || '';
 
                 // 3. Проверяем наличие фразы
                 if (description.includes(currentPhrase)) {
-                    // Верификация успешна
                     document.getElementById('verifyStatus').className = 'status success';
                     document.getElementById('verifyStatus').textContent = `✅ Верификация прошла успешно! Добро пожаловать, ${username}!`;
                     saveVerification(username, currentPhrase);
                     updateUserStatus(true, username);
-                    // Обновляем кнопку
                     document.getElementById('verifyBtn').textContent = '🔄 Сменить аккаунт';
                     showNotification(`✅ Вы верифицированы как ${username}`, 'success');
                 } else {
@@ -1336,12 +1334,10 @@
 
         // -------- ИНИЦИАЛИЗАЦИЯ --------
         async function init() {
-            // Загружаем товары
             const hasSaved = loadProducts();
             if (!hasSaved) {
                 await loadFromTovarFile();
             } else {
-                // Проверяем обновление tovar.txt
                 try {
                     const response = await fetch('tovar.txt?t=' + Date.now());
                     if (response.ok) {
@@ -1379,10 +1375,7 @@
                 } catch (e) {}
             }
 
-            // Загружаем состояние верификации
             loadVerification();
-
-            // Восстанавливаем ник из localStorage для удобства
             const savedUsername = localStorage.getItem('robloxUsername');
             if (savedUsername) {
                 document.getElementById('robloxUsername').value = savedUsername;
